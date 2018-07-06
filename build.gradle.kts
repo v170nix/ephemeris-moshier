@@ -27,7 +27,7 @@ plugins {
 
 group = "net.arwix.astronomy2"
 val artifactID = "ephemeris-moshier"
-version = "0.3.3"
+version = "0.3.4"
 
 setProperty("targetCompatibility", JavaVersion.VERSION_1_6)
 setProperty("sourceCompatibility", JavaVersion.VERSION_1_6)
@@ -52,6 +52,8 @@ shadowJar.apply {
         exclude(dependency("org.apiguardian:apiguardian-api"))
         exclude(dependency("net.arwix.astronomy2:astronomy-core"))
         exclude(dependency("org.jetbrains.kotlinx:kotlinx-coroutines-core"))
+        exclude(dependency("org.jetbrains.kotlinx:kotlinx-coroutines-core-common"))
+        exclude(dependency("org.jetbrains.kotlinx:atomicfu-common"))
     }
 }
 
