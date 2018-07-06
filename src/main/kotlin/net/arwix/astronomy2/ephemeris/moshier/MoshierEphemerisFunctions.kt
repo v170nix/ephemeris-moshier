@@ -1,6 +1,9 @@
 package net.arwix.astronomy2.ephemeris.moshier
 
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.async
 import net.arwix.astronomy2.core.*
+import net.arwix.astronomy2.core.ephemeris.coordinates.getCoroutineHeliocentricEclipticCoordinates
 import net.arwix.astronomy2.core.ephemeris.coordinates.getHeliocentricEclipticCoordinates
 import net.arwix.astronomy2.core.ephemeris.precession.*
 import net.arwix.astronomy2.core.kepler.ID_EARTH_KEPLER_ELEMENTS
@@ -72,7 +75,18 @@ inline fun createEarthMoshierCoordinates(crossinline emBarycenterCoordinates: ge
         val p = emBarycenterCoordinates(jT)
         val moon = moonCoordinates(jT)
         val earthMoonRatio = 2.7068700387534E7 / 332946.050895
-         p - moon * (1.0 / (earthMoonRatio + 1.0))
+        p - moon * (1.0 / (earthMoonRatio + 1.0))
+    }
+}
+
+@Heliocentric @Ecliptic @J2000
+inline fun createCoroutineEarthMoshierCoordinates(crossinline emBarycenterCoordinates: getHeliocentricEclipticCoordinates,
+                                                  crossinline moonCoordinates: getHeliocentricEclipticCoordinates): getCoroutineHeliocentricEclipticCoordinates {
+    return { jT ->
+        val p = async(CommonPool) { emBarycenterCoordinates(jT) }
+        val moon = async(CommonPool) { moonCoordinates(jT) }
+        val earthMoonRatio = 2.7068700387534E7 / 332946.050895
+         p.await() - moon.await() * (1.0 / (earthMoonRatio + 1.0))
     }
 }
 
