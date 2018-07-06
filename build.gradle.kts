@@ -15,8 +15,10 @@ import org.gradle.api.artifacts.dsl.ArtifactHandler
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.bundling.Jar
+import org.jetbrains.kotlin.gradle.dsl.Coroutines
+
 plugins {
-    kotlin("jvm") version "1.2.50"
+    kotlin("jvm") version "1.2.51"
     id("com.github.johnrengelman.shadow") version "2.0.2"
 //    id("java")
     `maven-publish`
@@ -25,7 +27,7 @@ plugins {
 
 group = "net.arwix.astronomy2"
 val artifactID = "ephemeris-moshier"
-version = "0.2.0"
+version = "0.3.0"
 
 setProperty("targetCompatibility", JavaVersion.VERSION_1_6)
 setProperty("sourceCompatibility", JavaVersion.VERSION_1_6)
@@ -44,19 +46,26 @@ shadowJar.apply {
     classifier = null
     dependsOn("classes")
     dependencies {
-        exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib:1.2.50"))
-        exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib-common:1.2.50"))
+        exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib:1.2.51"))
+        exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib-common:1.2.51"))
         exclude(dependency("org.jetbrains:annotations:13.0"))
         exclude(dependency("org.apiguardian:apiguardian-api:1.0.0"))
+        exclude(dependency("net.arwix.astronomy2:astronomy-core:0.3.0"))
+        exclude(dependency("org.jetbrains.kotlinx:kotlinx-coroutines-core:0.23.4"))
     }
 }
 
 dependencies {
     compile(kotlin("stdlib"))
-    compile("net.arwix.astronomy2:astronomy-core:0.1.8")
+    compile("net.arwix.astronomy2:astronomy-core:0.3.0")
+    compile ("org.jetbrains.kotlinx:kotlinx-coroutines-core:0.23.4")
     testCompile("org.junit.jupiter:junit-jupiter-api:5.2.0")
     testCompile("org.junit.jupiter:junit-jupiter-params:5.2.0")
     testRuntime("org.junit.jupiter:junit-jupiter-engine:5.2.0")
+}
+
+kotlin {
+    experimental.coroutines = Coroutines.ENABLE
 }
 
 tasks {
