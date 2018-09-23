@@ -1,10 +1,9 @@
 package net.arwix.astronomy2.ephemeris.moshier
 
-import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
 import net.arwix.astronomy2.core.*
-import net.arwix.astronomy2.core.ephemeris.coordinates.getCoroutineHeliocentricEclipticCoordinates
-import net.arwix.astronomy2.core.ephemeris.coordinates.getHeliocentricEclipticCoordinates
+import net.arwix.astronomy2.core.ephemeris.coordinates.createHeliocentricEclipticCoordinates
+import net.arwix.astronomy2.core.ephemeris.coordinates.createSuspendHeliocentricEclipticCoordinates
 import net.arwix.astronomy2.core.ephemeris.precession.*
 import net.arwix.astronomy2.core.kepler.ID_EARTH_KEPLER_ELEMENTS
 import net.arwix.astronomy2.core.kepler.getAscendingNode
@@ -21,7 +20,7 @@ import kotlin.math.sin
 
 
 @Heliocentric @Ecliptic @J2000
-fun createMoshierCoordinates(idMoshierBody: IdMoshierBody): getHeliocentricEclipticCoordinates {
+fun createMoshierCoordinates(idMoshierBody: IdMoshierBody): createHeliocentricEclipticCoordinates {
     val data = when (idMoshierBody) {
         ID_MOSHIER_SUN -> return {_
             ->RectangularVector()
@@ -58,7 +57,7 @@ fun createMoshierCoordinates(idMoshierBody: IdMoshierBody): getHeliocentricEclip
 fun createMoonMoshierCoordinates(jT0: JT,
                                  @Ecliptic precessionElements: PrecessionElements =
                                          createPrecessionElements(ID_PRECESSION_WILLIAMS_1994, jT0)
-): getHeliocentricEclipticCoordinates {
+): createHeliocentricEclipticCoordinates {
     return {jT ->
         val moonLat = g1plan(jT, MoonLatMoshierData.args, MoonLatMoshierData.tabl, MoonLatMoshierData.max_harmonic, MoonLatMoshierData.timescale)
         val moon = g2plan(jT, MoonLonMoshierData.args, MoonLonMoshierData.distance,
@@ -68,8 +67,8 @@ fun createMoonMoshierCoordinates(jT0: JT,
 }
 
 @Heliocentric @Ecliptic @J2000
-inline fun createEarthMoshierCoordinates(crossinline emBarycenterCoordinates: getHeliocentricEclipticCoordinates,
-                                         crossinline moonCoordinates: getHeliocentricEclipticCoordinates): getHeliocentricEclipticCoordinates {
+inline fun createEarthMoshierCoordinates(crossinline emBarycenterCoordinates: createHeliocentricEclipticCoordinates,
+                                         crossinline moonCoordinates: createHeliocentricEclipticCoordinates): createHeliocentricEclipticCoordinates {
     return { jT ->
         val p = emBarycenterCoordinates(jT)
         val moon = moonCoordinates(jT)
@@ -79,11 +78,11 @@ inline fun createEarthMoshierCoordinates(crossinline emBarycenterCoordinates: ge
 }
 
 @Heliocentric @Ecliptic @J2000
-inline fun createSuspenedEarthMoshierCoordinates(crossinline emBarycenterCoordinates: getHeliocentricEclipticCoordinates,
-                                                  crossinline moonCoordinates: getHeliocentricEclipticCoordinates): getCoroutineHeliocentricEclipticCoordinates {
+inline fun createSuspenedEarthMoshierCoordinates(crossinline emBarycenterCoordinates: createHeliocentricEclipticCoordinates,
+                                                  crossinline moonCoordinates: createHeliocentricEclipticCoordinates): createSuspendHeliocentricEclipticCoordinates {
     return { jT ->
-        val p = async(CommonPool) { emBarycenterCoordinates(jT) }
-        val moon = async(CommonPool) { moonCoordinates(jT) }
+        val p = async { emBarycenterCoordinates(jT) }
+        val moon = async { moonCoordinates(jT) }
         val earthMoonRatio = 2.7068700387534E7 / 332946.050895
          p.await() - moon.await() * (1.0 / (earthMoonRatio + 1.0))
     }
