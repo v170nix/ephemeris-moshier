@@ -1,6 +1,6 @@
 package net.arwix.astronomy2.ephemeris.moshier
 
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.async
 import net.arwix.astronomy2.core.*
 import net.arwix.astronomy2.core.ephemeris.coordinates.createHeliocentricEclipticCoordinates
 import net.arwix.astronomy2.core.ephemeris.coordinates.createSuspendHeliocentricEclipticCoordinates
@@ -22,9 +22,7 @@ import kotlin.math.sin
 @Heliocentric @Ecliptic @J2000
 fun createMoshierCoordinates(idMoshierBody: IdMoshierBody): createHeliocentricEclipticCoordinates {
     val data = when (idMoshierBody) {
-        ID_MOSHIER_SUN -> return {_
-            ->RectangularVector()
-        }
+        ID_MOSHIER_SUN -> return { RectangularVector() }
         ID_MOSHIER_MERCURY -> MercuryMoshierData
         ID_MOSHIER_VENUS -> VenusMoshierData
         ID_MOSHIER_EM_BARYCENTER -> return {jT ->
@@ -39,7 +37,7 @@ fun createMoshierCoordinates(idMoshierBody: IdMoshierBody): createHeliocentricEc
         ID_MOSHIER_EARTH -> return {jT ->
             createEarthMoshierCoordinates(
                     createMoshierCoordinates(ID_MOSHIER_EM_BARYCENTER)
-            ) { _ -> createMoonMoshierCoordinates(jT).invoke(jT) }.invoke(jT)
+            ) { createMoonMoshierCoordinates(jT).invoke(jT) }.invoke(jT)
         }
         ID_MOSHIER_LIBRATION -> return createLibrationMoshierCoordinates()
         ID_MOSHIER_MARS -> MarsMoshierData
